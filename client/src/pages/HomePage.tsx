@@ -1,33 +1,43 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchApprovedRecipes } from "../api/recipes";
-import type { Recipe } from "../api/recipes";
+import { useAuth } from "../context/AuthContext";
 
 export function HomePage() {
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user, loading } = useAuth();
 
-  useEffect(() => {
-    fetchApprovedRecipes()
-      .then(({ recipes }) => setRecipes(recipes))
-      .finally(() => setLoading(false));
-  }, []);
+  if (loading) return <p>Chargement...</p>;
 
-  if (loading) return <p>Chargement des recettes...</p>;
+  if (!user) {
+    return (
+      <div className="card hero-card">
+        <h1>Bienvenue</h1>
+        <p>Connecte-toi ou crée un compte pour accéder à ton espace.</p>
+        <div className="hero-actions">
+          <Link to="/login" className="btn btn-outline">
+            Connecte-toi
+          </Link>
+          <Link to="/register" className="btn">
+            Crée un compte
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <h1>Recettes</h1>
-      {recipes.length === 0 && <p>Aucune recette publiée pour le moment.</p>}
-      <div className="recipe-grid">
-        {recipes.map((recipe) => (
-          <Link key={recipe.id} to={`/recettes/${recipe.id}`} className="recipe-card">
-            <h2>{recipe.title}</h2>
-            <p>{recipe.description}</p>
-            <span className="muted">par {recipe.author_username}</span>
-          </Link>
-        ))}
-      </div>
+    <div className="card">
+      <h1>Mon compte</h1>
+      <dl className="account-info">
+        <dt>Pseudo</dt>
+        <dd>{user.username}</dd>
+        <dt>Nom</dt>
+        <dd>
+          {user.firstName} {user.lastName}
+        </dd>
+        <dt>Email</dt>
+        <dd>{user.email}</dd>
+        <dt>Téléphone</dt>
+        <dd>{user.phone}</dd>
+      </dl>
     </div>
   );
 }
